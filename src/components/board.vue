@@ -1,24 +1,34 @@
 <script lang="ts">
+import BoardManager, { State } from '@/boardManager';
 import { defineComponent } from 'vue';
 
 export default defineComponent({
 	name: 'PlanEditor',
-	/* props: {
-		
-	}, */
+	emits: ['action'],
+	props: {
+		mRow: {
+			type: Number,
+			required: true
+		},
+		mCol: {
+			type: Number,
+			required: true
+		}
+	},
 	setup(){
 		return {
-			
+			State,
+			BoardManager
 		}
 	},
 	data() {
 		return {
-			
+			board: BoardManager.smallBoard.value[this.mRow][this.mCol]
 		};
 	},
 	methods: {
 		action(row: number, col: number){
-			
+			this.$emit('action', [row, col])
 		}
 	}
 })
@@ -26,17 +36,14 @@ export default defineComponent({
 </script>
 
 <template>
-	<div class="board_container square">
-		<div class="small_square square" @click="action(1, 1)"></div>
-		<div class="small_square square" @click="action(1, 2)"></div>
-		<div class="small_square square" @click="action(1, 3)"></div>
-		<div class="small_square square" @click="action(2, 1)"></div>
-		<div class="small_square square" @click="action(2, 2)"></div>
-		<div class="small_square square" @click="action(2, 3)"></div>
-		<div class="small_square square" @click="action(3, 1)"></div>
-		<div class="small_square square" @click="action(3, 2)"></div>
-		<div class="small_square square" @click="action(3, 3)"></div>
-	</div>
+	<template v-for="n, row of board">
+		<template v-for="s, col of n">
+			<div class="small_square square" @click="action(row, col)">
+				<span class="material-symbols-outlined">{{ s }}</span>
+			</div>
+		</template>
+	</template>
+	<span class="material-symbols-outlined winner">{{ BoardManager.bigBoard.value[mRow][mCol] }}</span>
 </template>
 
 <style scoped>

@@ -16,6 +16,7 @@
 	box-sizing: border-box !important;
 	margin: 0;
 	font-family: 'Outfit', sans-serif;
+	user-select: none;
 }
 
 html {
