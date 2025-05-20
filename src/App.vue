@@ -1,12 +1,18 @@
 <script setup lang="ts">
 import Board from '@/components/board.vue'
 import BoardManager, { State } from '@/boardManager'
+import { ref } from 'vue';
 BoardManager.init()
 
 let turn = State.X
 let turnRow = null as number | null;
 let turnCol = null as number | null;
 let won = null as null | number[][];
+
+let hoveredCol = ref(-1)
+let hoveredRow = ref(-1)
+let hoveredOutRow = ref(-1)
+let hoveredOutCol = ref(-1)
 
 function move(mRow: number, mCol: number, row: number, col: number){
 	if(!BoardManager.Move(mRow, mCol, row, col, turn)){
@@ -49,41 +55,54 @@ function restart(){
 	won = null
 }
 
+function getValue(state: State, row: number, col: number, mRow: number, mCol: number){
+	if(state.valueOf() !== State.Blank){
+		return state;
+	}
+	if(row === hoveredRow.value && col === hoveredCol.value && mRow === hoveredOutRow.value && mCol === hoveredOutCol.value){
+		return turn;
+	}
+	return state
+}
+
 </script>
 
 <template>
-	<main>
-		<div>
-			<h1 v-if="!won">Turn: 
-				<span class="material-symbols-outlined">{{ turn }}</span>
-			</h1>
-			<h1 v-if="won !== null">Won: 
-				<span class="material-symbols-outlined">{{ turn }}</span>
-			</h1>
-			<button v-if="won !== null" @click="restart()">Restart</button>
-		</div>
-		<div class="board_container master_square">
-			<template v-for="n, mRow of BoardManager.smallBoard.value">
-				<template v-for="s, mCol of n">
-					<div class="board_container square" :class="{winner: won?.find(a => a[0] === mRow && a[1] === mCol)}">
-						<template v-if="BoardManager.bigBoard.value[mRow][mCol] === State.Blank">
-							<template v-for="n, row of s">
-								<template v-for="s, col of n">
-									<div class="small_square square" @click="move(mRow, mCol, row, col)">
-										<span class="material-symbols-outlined">{{ s }}</span>
-									</div>
-								</template>
+<main>
+	<div>
+		<h1 v-if="!won">Turn: 
+			<span class="material-symbols-outlined">{{ turn }}</span>
+		</h1>
+		<h1 v-if="won !== null">Won: 
+			<span class="material-symbols-outlined">{{ turn }}</span>
+		</h1>
+		<button v-if="won !== null" @click="restart()">Restart</button>
+	</div>
+	<div class="board_container master_square">
+		<template v-for="array3, mRow of BoardManager.smallBoard.value">
+			<template v-for="array2, mCol of array3">
+				<div class="board_container square" :class="{winner: won?.find(a => a[0] === mRow && a[1] === mCol)}">
+					<template v-if="BoardManager.bigBoard.value[mRow][mCol] === State.Blank">
+						<template v-for="array, row of array2">
+							<template v-for="state, col of array">
+								<div class="small_square square" 
+									@click="move(mRow, mCol, row, col)"
+									@mouseover="hoveredCol = col, hoveredRow = row, hoveredOutCol = mCol, hoveredOutRow = mRow"
+								>
+									<span class="material-symbols-outlined">{{ getValue(state, row, col, mRow, mCol) }}</span>
+								</div>
 							</template>
 						</template>
-						<span  v-if="BoardManager.bigBoard.value[mRow][mCol] === State.Blank || won !== null" 
-							:class="{blocked: turnRow != null && turnCol != null && won === null ? (turnRow != mRow || turnCol != mCol) : won?.find(a => a[0] !== mRow && a[1] !== mCol) ? true : false}"
-						></span>
-						<span class="material-symbols-outlined absolute">{{ BoardManager.bigBoard.value[mRow][mCol] }}</span>
-					</div>
-				</template>
+					</template>
+					<span  v-if="BoardManager.bigBoard.value[mRow][mCol] === State.Blank || won !== null" 
+						:class="{blocked: turnRow != null && turnCol != null && won === null ? (turnRow != mRow || turnCol != mCol) : won?.find(a => a[0] !== mRow && a[1] !== mCol) ? true : false}"
+					></span>
+					<span class="material-symbols-outlined absolute">{{ BoardManager.bigBoard.value[mRow][mCol] }}</span>
+				</div>
 			</template>
-		</div>
-	</main>
+		</template>
+	</div>
+</main>
 </template>
 
 <style>
